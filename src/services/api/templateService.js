@@ -1,4 +1,5 @@
 import { delay, formatDate } from "@/utils/helpers";
+
 const apiDelay = () => delay(Math.random() * 300 + 200);
 
 // Default templates with variable placeholders
@@ -128,51 +129,42 @@ let templates = [
 
 // Variable substitution engine
 const substituteVariables = (template, productData) => {
-  if (!template || !productData) return template;
-  
+  if (!template || !productData) {
+    console.warn('Missing template or product data for substitution');
+    return template || '';
+  }
+
   let result = template;
   
-  // Format price
-  const formattedPrice = productData.price ? productData.price.toFixed(2) : '0.00';
+  // Format price safely
+  const formattedPrice = productData.price ? 
+    (typeof productData.price === 'number' ? productData.price.toFixed(2) : productData.price.toString()) : 
+    '0.00';
   
-  // Format date
-  const formatDateLocal = (dateString) => {
-    if (!dateString) return 'Not available';
-    try {
-      return new Date(dateString).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-      });
-    } catch {
-      return dateString;
-    }
-  };
-  
-  // Variable mapping with defaults
+  // Create variables object with safe fallbacks
   const variables = {
-    title: productData.title || 'Product Title',
-    description: productData.description || 'Product description not available',
+    title: productData.title || 'Untitled Product',
+    description: productData.description || 'No description available',
     sku: productData.sku || 'N/A',
     category: productData.category || 'Uncategorized',
     vendor: productData.vendor || 'Unknown Vendor',
     price: formattedPrice,
-    inventory: productData.inventory || '0',
-    lastUpdated: formatDateLocal(productData.lastUpdated || productData.updatedAt),
+    inventory: productData.inventory?.toString() || '0',
+    lastUpdated: productData.lastUpdated ? formatDate(productData.lastUpdated) : formatDate(new Date()),
     storeId: productData.storeId || '',
     status: productData.status || 'Available'
   };
-  
-  // Replace all template variables with actual data
+
+  // Replace all variables in template
   Object.keys(variables).forEach(key => {
     const regex = new RegExp(`{{${key}}}`, 'g');
-    result = result.replace(regex, variables[key]);
+    result = result.replace(regex, variables[key] || '');
   });
   
   // Check for any unreplaced variables and log warnings
   const unreplacedVars = result.match(/{{(\w+)}}/g);
   if (unreplacedVars && unreplacedVars.length > 0) {
-    console.warn('Template contains unreplaced variables:', unreplacedVars);
+    console.warn('Unreplaced template variables found:', unreplacedVars);
   }
   
   return result;
@@ -180,19 +172,25 @@ const substituteVariables = (template, productData) => {
 
 // Extract variables from template content
 const extractVariables = (content) => {
-  if (!content) return [];
-  const matches = content.match(/{{(\w+)}}/g);
-  if (!matches) return [];
-  return [...new Set(matches.map(match => match.replace(/[{}]/g, '')))];
+  if (!content || typeof content !== 'string') return [];
+  
+  try {
+    const matches = content.match(/{{(\w+)}}/g);
+    if (!matches) return [];
+    return [...new Set(matches.map(match => match.replace(/[{}]/g, '')))];
+  } catch (error) {
+    console.error('Error extracting variables from template:', error);
+    return [];
+  }
 };
 
 export const templateService = {
   async getAll() {
     await apiDelay();
-    return [...templates];
+return [...templates];
   },
 
-async getById(id) {
+  async getById(id) {
     await apiDelay();
     const template = templates.find(t => t.id === parseInt(id));
     if (!template) {
