@@ -1,0 +1,286 @@
+import { delay, formatDate } from "@/utils/helpers";
+
+const apiDelay = () => delay(Math.random() * 300 + 200);
+
+// Default templates with variable placeholders
+let templates = [
+  {
+    Id: 1,
+    name: 'SEO Optimized',
+    description: 'Search engine optimized template with structured markup',
+    content: `<div class="product-description">
+  <h2>{{title}}</h2>
+  <p class="lead">{{description}}</p>
+  
+  <div class="features">
+    <h3>Key Features:</h3>
+    <ul>
+      <li>SKU: {{sku}}</li>
+      <li>Category: {{category}}</li>
+      <li>Vendor: {{vendor}}</li>
+    </ul>
+  </div>
+  
+  <div class="pricing">
+    <h3>Pricing Information:</h3>
+    <p><strong>Price:</strong> ${{price}}</p>
+    <p><strong>Stock:</strong> {{inventory}} units available</p>
+  </div>
+  
+  <div class="meta">
+    <p><em>Last updated: {{lastUpdated}}</em></p>
+  </div>
+</div>`,
+    variables: ['title', 'description', 'sku', 'category', 'vendor', 'price', 'inventory', 'lastUpdated'],
+    isCustom: false,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  },
+  {
+    Id: 2,
+    name: 'Marketing Focused',
+    description: 'Persuasive copy designed to convert visitors to customers',
+    content: `<div class="marketing-description">
+  <h1>🚀 {{title}} - Transform Your Experience!</h1>
+  
+  <div class="hero-section">
+    <p class="headline">{{description}}</p>
+    <p class="value-prop"><strong>Why choose {{title}}?</strong> Because excellence matters!</p>
+  </div>
+  
+  <div class="features-grid">
+    <div class="feature-card">
+      <h3>✨ Premium Quality</h3>
+      <p>Product Code: {{sku}}</p>
+    </div>
+    <div class="feature-card">
+      <h3>🏆 Trusted Brand</h3>
+      <p>By {{vendor}} in {{category}}</p>
+    </div>
+    <div class="feature-card">
+      <h3>💰 Great Value</h3>
+      <p>Only ${{price}} - {{inventory}} left in stock!</p>
+    </div>
+  </div>
+  
+  <div class="cta-section">
+    <p><strong>Don't miss out!</strong> Order now while supplies last.</p>
+  </div>
+</div>`,
+    variables: ['title', 'description', 'sku', 'vendor', 'category', 'price', 'inventory'],
+    isCustom: false,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  },
+  {
+    Id: 3,
+    name: 'Technical Detailed',
+    description: 'Comprehensive technical specifications and features',
+    content: `<div class="technical-specs">
+  <header>
+    <h1>{{title}}</h1>
+    <p class="subtitle">Model: {{sku}} | Category: {{category}}</p>
+  </header>
+  
+  <section class="overview">
+    <h2>Product Overview</h2>
+    <p>{{description}}</p>
+  </section>
+  
+  <section class="specifications">
+    <h2>Technical Specifications</h2>
+    <table>
+      <tr><td><strong>SKU:</strong></td><td>{{sku}}</td></tr>
+      <tr><td><strong>Category:</strong></td><td>{{category}}</td></tr>
+      <tr><td><strong>Manufacturer:</strong></td><td>{{vendor}}</td></tr>
+      <tr><td><strong>Price:</strong></td><td>${{price}}</td></tr>
+      <tr><td><strong>Availability:</strong></td><td>{{inventory}} units</td></tr>
+    </table>
+  </section>
+  
+  <section class="additional-info">
+    <h2>Additional Information</h2>
+    <p><small>Product information last updated: {{lastUpdated}}</small></p>
+  </section>
+</div>`,
+    variables: ['title', 'sku', 'category', 'description', 'vendor', 'price', 'inventory', 'lastUpdated'],
+    isCustom: false,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  },
+  {
+    Id: 4,
+    name: 'Minimalist',
+    description: 'Clean, concise descriptions highlighting key benefits',
+    content: `<div class="minimalist-description">
+  <h1>{{title}}</h1>
+  
+  <p>{{description}}</p>
+  
+  <div class="essentials">
+    <p><strong>${{price}}</strong></p>
+    <p>{{inventory}} available</p>
+    <p><small>{{sku}}</small></p>
+  </div>
+</div>`,
+    variables: ['title', 'description', 'price', 'inventory', 'sku'],
+    isCustom: false,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  }
+];
+
+// Variable substitution engine
+const substituteVariables = (template, productData) => {
+  if (!template || !productData) return template;
+  
+  let result = template;
+  
+  // Format price
+  const formattedPrice = productData.price ? productData.price.toFixed(2) : '0.00';
+  
+  // Format date
+  const formatDate = (dateString) => {
+    if (!dateString) return 'Not available';
+    try {
+      return new Date(dateString).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+    } catch {
+      return dateString;
+    }
+  };
+  
+  // Variable mapping
+  const variables = {
+    title: productData.title || 'Product Title',
+    description: productData.description || 'Product description not available',
+    sku: productData.sku || 'N/A',
+    category: productData.category || 'Uncategorized',
+    vendor: productData.vendor || 'Unknown Vendor',
+    price: formattedPrice,
+    inventory: productData.inventory !== undefined ? productData.inventory.toString() : '0',
+    lastUpdated: formatDate(productData.lastUpdated),
+    storeId: productData.storeId?.toString() || '0',
+    status: productData.status || 'unknown'
+  };
+  
+  // Replace all variables
+  Object.entries(variables).forEach(([key, value]) => {
+    const regex = new RegExp(`{{${key}}}`, 'g');
+    result = result.replace(regex, value);
+  });
+  
+  return result;
+};
+
+// Extract variables from template content
+const extractVariables = (content) => {
+  if (!content) return [];
+  const matches = content.match(/{{(\w+)}}/g);
+  if (!matches) return [];
+  return [...new Set(matches.map(match => match.replace(/[{}]/g, '')))];
+};
+
+export const templateService = {
+  async getAll() {
+    await apiDelay();
+    return [...templates];
+  },
+
+  async getById(id) {
+    await apiDelay();
+    const template = templates.find(t => t.Id === parseInt(id));
+    if (!template) {
+      throw new Error('Template not found');
+    }
+    return { ...template };
+  },
+
+  async create(templateData) {
+    await apiDelay();
+    const maxId = Math.max(...templates.map(t => t.Id), 0);
+    const variables = extractVariables(templateData.content);
+    
+    const newTemplate = {
+      Id: maxId + 1,
+      name: templateData.name,
+      description: templateData.description || '',
+      content: templateData.content,
+      variables,
+      isCustom: true,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    
+    templates.push(newTemplate);
+    return { ...newTemplate };
+  },
+
+  async update(id, templateData) {
+    await apiDelay();
+    const index = templates.findIndex(t => t.Id === parseInt(id));
+    if (index === -1) {
+      throw new Error('Template not found');
+    }
+    
+    const variables = extractVariables(templateData.content);
+    
+    templates[index] = {
+      ...templates[index],
+      ...templateData,
+      Id: templates[index].Id,
+      variables,
+      updatedAt: new Date().toISOString()
+    };
+    
+    return { ...templates[index] };
+  },
+
+  async delete(id) {
+    await apiDelay();
+    const index = templates.findIndex(t => t.Id === parseInt(id));
+    if (index === -1) {
+      throw new Error('Template not found');
+    }
+    
+    // Prevent deletion of default templates
+    if (!templates[index].isCustom) {
+      throw new Error('Cannot delete default templates');
+    }
+    
+    const deletedTemplate = templates.splice(index, 1)[0];
+    return { ...deletedTemplate };
+  },
+
+  async generatePreview(templateId, productData) {
+    await apiDelay();
+    const template = templates.find(t => t.Id === parseInt(templateId));
+    if (!template) {
+      throw new Error('Template not found');
+    }
+    
+    const preview = substituteVariables(template.content, productData);
+    return { preview, variables: template.variables };
+  },
+
+  async getAvailableVariables() {
+    await apiDelay();
+    return [
+      { key: 'title', label: 'Product Title', description: 'The name of the product' },
+      { key: 'description', label: 'Description', description: 'Product description' },
+      { key: 'sku', label: 'SKU', description: 'Stock Keeping Unit identifier' },
+      { key: 'category', label: 'Category', description: 'Product category' },
+      { key: 'vendor', label: 'Vendor', description: 'Product vendor/supplier' },
+      { key: 'price', label: 'Price', description: 'Product price (formatted)' },
+      { key: 'inventory', label: 'Inventory', description: 'Stock quantity' },
+      { key: 'lastUpdated', label: 'Last Updated', description: 'Last update date (formatted)' },
+      { key: 'storeId', label: 'Store ID', description: 'Associated store identifier' },
+      { key: 'status', label: 'Status', description: 'Product status' }
+    ];
+  }
+};
+
+export default templateService;
