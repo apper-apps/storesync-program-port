@@ -1,0 +1,98 @@
+[
+  {
+    "Id": 1,
+    "type": "price_update",
+    "status": "completed",
+    "storeId": 1,
+    "title": "TechSupplier Price Update",
+    "createdAt": "2024-01-15T10:30:00Z",
+    "startedAt": "2024-01-15T10:31:00Z",
+    "completedAt": "2024-01-15T10:35:00Z",
+    "details": {
+      "totalItems": 156,
+      "processed": 156,
+      "updated": 89,
+      "created": 12,
+      "archived": 8,
+      "errors": 0,
+      "source": "vendor_price_sheet.xlsx"
+    }
+  },
+  {
+    "Id": 2,
+    "type": "inventory_sync",
+    "status": "completed",
+    "storeId": 2,
+    "title": "Fashion House Inventory Sync",
+    "createdAt": "2024-01-15T08:45:00Z",
+    "startedAt": "2024-01-15T08:46:00Z",
+    "completedAt": "2024-01-15T08:52:00Z",
+    "details": {
+      "totalItems": 234,
+      "processed": 234,
+      "updated": 187,
+      "created": 23,
+      "archived": 15,
+      "errors": 9,
+      "source": "inventory_feed.csv"
+    }
+  },
+  {
+    "Id": 3,
+    "type": "description_generation",
+    "status": "processing",
+    "storeId": 1,
+    "title": "AI Description Generation - Electronics",
+    "createdAt": "2024-01-15T11:00:00Z",
+    "startedAt": "2024-01-15T11:01:00Z",
+    "completedAt": null,
+    "details": {
+      "totalItems": 45,
+      "processed": 23,
+      "updated": 23,
+      "created": 0,
+      "archived": 0,
+      "errors": 0,
+      "aiProvider": "OpenAI GPT-4",
+      "template": "seo_optimized"
+    }
+  },
+  {
+    "Id": 4,
+    "type": "image_optimization",
+    "status": "failed",
+    "storeId": 3,
+    "title": "Product Image Optimization",
+    "createdAt": "2024-01-14T16:20:00Z",
+    "startedAt": "2024-01-14T16:21:00Z",
+    "completedAt": "2024-01-14T16:28:00Z",
+    "details": {
+      "totalItems": 78,
+      "processed": 34,
+      "updated": 34,
+      "created": 0,
+      "archived": 0,
+      "errors": 44,
+      "errorMessage": "API rate limit exceeded"
+    }
+  },
+  {
+    "Id": 5,
+    "type": "full_sync",
+    "status": "completed",
+    "storeId": 2,
+    "title": "Complete Store Synchronization",
+    "createdAt": "2024-01-14T12:00:00Z",
+    "startedAt": "2024-01-14T12:01:00Z",
+    "completedAt": "2024-01-14T12:45:00Z",
+    "details": {
+      "totalItems": 892,
+      "processed": 892,
+      "updated": 456,
+      "created": 67,
+      "archived": 23,
+      "errors": 12,
+      "source": "complete_catalog.json"
+    }
+  }
+]

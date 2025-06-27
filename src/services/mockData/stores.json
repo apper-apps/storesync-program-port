@@ -1,0 +1,35 @@
+[
+  {
+    "Id": 1,
+    "platform": "shopify",
+    "name": "TechStore Pro",
+    "apiUrl": "https://techstore-pro.myshopify.com",
+    "apiKey": "shpat_****************************",
+    "status": "connected",
+    "lastSync": "2024-01-15T10:30:00Z",
+    "productCount": 1247,
+    "createdAt": "2024-01-10T09:00:00Z"
+  },
+  {
+    "Id": 2,
+    "platform": "woocommerce",
+    "name": "Fashion Forward",
+    "apiUrl": "https://fashionforward.com",
+    "apiKey": "ck_****************************",
+    "status": "connected",
+    "lastSync": "2024-01-15T08:45:00Z",
+    "productCount": 892,
+    "createdAt": "2024-01-12T14:20:00Z"
+  },
+  {
+    "Id": 3,
+    "platform": "shopify",
+    "name": "Home & Garden Supply",
+    "apiUrl": "https://homegardenco.myshopify.com",
+    "apiKey": "shpat_****************************",
+    "status": "error",
+    "lastSync": "2024-01-14T16:20:00Z",
+    "productCount": 634,
+    "createdAt": "2024-01-08T11:30:00Z"
+  }
+]
