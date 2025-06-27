@@ -2,9 +2,9 @@ import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { toast } from "react-toastify";
 import DOMPurify from "dompurify";
-import templateService from "@/services/api/templateService";
 import productService from "@/services/api/productService";
 import aiProviderService from "@/services/api/aiProviderService";
+import templateService from "@/services/api/templateService";
 import ApperIcon from "@/components/ApperIcon";
 import FormField from "@/components/molecules/FormField";
 import SkeletonLoader from "@/components/molecules/SkeletonLoader";
@@ -72,23 +72,24 @@ const loadData = async () => {
         productService.getAll(),
         templateService.getAll(),
         templateService.getAvailableVariables()
-      ]);
+]);
       
-      setActiveProviders(providerData.filter(p => p.isActive && p.status === 'connected'));
+      const filteredProviders = providerData.filter(p => p.isActive && p.status === 'connected');
+      setActiveProviders(filteredProviders);
       setProducts(productData.filter(p => p.status === 'active'));
       setTemplates(templateData);
-      setAvailableVariables(variableData);
-      
-      if (activeProviders.length > 0) {
-        setSelectedProvider(activeProviders[0].Id.toString());
+      setAvailableVariables(variableData || []);
+     
+      if (filteredProviders.length > 0 && filteredProviders[0]?.Id) {
+        setSelectedProvider(filteredProviders[0].Id.toString());
       }
-      
-      // Load initial template content for builder
-      if (templateData.length > 0) {
-        setCustomTemplateContent(templateData[0].content);
-        updatePreview(templateData[0].content, productData[0]);
+// Initialize with first template and product if available
+      if (templateData.length > 0 && productData.length > 0) {
+        setCustomTemplateContent(templateData[0].content || '');
+        updatePreview(templateData[0].content || '', productData[0]);
       }
     } catch (err) {
+      console.error('Error loading data:', err);
       setError(err.message || 'Failed to load AI tools data');
       toast.error('Failed to load AI tools data');
     } finally {
@@ -395,13 +396,13 @@ const updatePreview = async (templateContent, productData) => {
                       <select
                         value={selectedTemplateForBuilder}
                         onChange={(e) => handleTemplateSelect(e.target.value)}
-                        className="w-full px-3 py-2.5 bg-dark-surface border border-surface-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all duration-200"
+className="w-full px-3 py-2.5 bg-dark-surface border border-surface-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all duration-200"
                       >
-                        {templates.map(template => (
+                        {templates.map(template => template?.Id ? (
                           <option key={template.Id} value={template.Id}>
                             {template.name} {template.isCustom ? '(Custom)' : ''}
                           </option>
-                        ))}
+                        ) : null)}
                       </select>
                     </div>
 
@@ -595,17 +596,17 @@ const updatePreview = async (templateContent, productData) => {
                         </div>
                       </div>
                       
-                      <div className="flex space-x-2">
+<div className="flex space-x-2">
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleTemplateSelect(template.Id.toString())}
+                          onClick={() => handleTemplateSelect(template?.Id?.toString() || '')}
                           className="flex-1"
                         >
                           <ApperIcon name="Eye" className="w-3 h-3 mr-1" />
                           Use
                         </Button>
-                        {template.isCustom && (
+                        {template?.isCustom && (
                           <>
                             <Button
                               variant="ghost"
@@ -705,18 +706,20 @@ const updatePreview = async (templateContent, productData) => {
                       </label>
 <select
                         value={selectedTemplate}
-                        onChange={(e) => setSelectedTemplate(e.target.value)}
+                        onChange={(e) => e.target.value && setSelectedTemplate(e.target.value)}
                         className="w-full px-3 py-2.5 bg-dark-surface border border-surface-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all duration-200"
                       >
-                        {templates.map(template => (
+                        {templates.map(template => template?.Id ? (
                           <option key={template.Id} value={template.Id}>
                             {template.name}
                           </option>
-                        ))}
+) : null)}
                       </select>
-                      <p className="text-xs text-surface-400 mt-1">
-                        {templates.find(t => t.Id === parseInt(selectedTemplate))?.description}
-                      </p>
+                      {selectedTemplate && (
+                        <p className="text-xs text-surface-400 mt-1">
+                          {templates.find(t => t.Id === parseInt(selectedTemplate))?.description}
+                        </p>
+                      )}
                     </div>
                     <Button
                       variant="primary"
