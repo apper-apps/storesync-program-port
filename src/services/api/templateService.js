@@ -21,9 +21,9 @@ let templates = [
     </ul>
   </div>
   
-  <div class="pricing">
+<div class="pricing">
     <h3>Pricing Information:</h3>
-    <p><strong>Price:</strong> ${{price}}</p>
+    <p><strong>Price:</strong> $\{{price}}</p>
     <p><strong>Stock:</strong> {{inventory}} units available</p>
   </div>
   
@@ -56,9 +56,9 @@ let templates = [
       <h3>🏆 Trusted Brand</h3>
       <p>By {{vendor}} in {{category}}</p>
     </div>
-    <div class="feature-card">
+<div class="feature-card">
       <h3>💰 Great Value</h3>
-      <p>Only ${{price}} - {{inventory}} left in stock!</p>
+      <p>Only $\{{price}} - {{inventory}} left in stock!</p>
     </div>
   </div>
   
@@ -89,9 +89,9 @@ let templates = [
     <h2>Technical Specifications</h2>
     <table>
       <tr><td><strong>SKU:</strong></td><td>{{sku}}</td></tr>
-      <tr><td><strong>Category:</strong></td><td>{{category}}</td></tr>
+<tr><td><strong>Category:</strong></td><td>{{category}}</td></tr>
       <tr><td><strong>Manufacturer:</strong></td><td>{{vendor}}</td></tr>
-      <tr><td><strong>Price:</strong></td><td>${{price}}</td></tr>
+      <tr><td><strong>Price:</strong></td><td>$\{{price}}</td></tr>
       <tr><td><strong>Availability:</strong></td><td>{{inventory}} units</td></tr>
     </table>
   </section>
@@ -113,9 +113,8 @@ let templates = [
   <h1>{{title}}</h1>
   
   <p>{{description}}</p>
-  
-  <div class="essentials">
-    <p><strong>${{price}}</strong></p>
+<div class="essentials">
+    <p><strong>$\{{price}}</strong></p>
     <p>{{inventory}} available</p>
     <p><small>{{sku}}</small></p>
   </div>
@@ -129,44 +128,86 @@ let templates = [
 
 // Variable substitution engine
 const substituteVariables = (template, productData) => {
-  if (!template || !productData) {
-    console.warn('Missing template or product data for substitution');
-    return template || '';
-  }
-
-  // Create comprehensive variable mapping with proper formatting and fallbacks
-  const formattedPrice = productData.price ? 
-    (typeof productData.price === 'number' ? productData.price.toFixed(2) : productData.price.toString()) : 
-    '0.00';
-
-  const variables = {
-    title: productData.title || 'Product Title',
-    description: productData.description || 'Product Description',
-    price: formattedPrice,
-    inventory: productData.inventory !== undefined ? productData.inventory.toString() : '0',
-    sku: productData.sku || 'N/A',
-    vendor: productData.vendor || 'Unknown Vendor',
-    category: productData.category || 'Uncategorized',
-    status: productData.status || 'active',
-    storeId: productData.storeId ? productData.storeId.toString() : '0',
-    lastUpdated: productData.lastUpdated ? formatDate(productData.lastUpdated) : formatDate(new Date())
-  };
-
-  let result = template;
-  
-  // Replace all variables in template
-  Object.keys(variables).forEach(key => {
-    const regex = new RegExp(`{{${key}}}`, 'g');
-    result = result.replace(regex, variables[key] || '');
-  });
-  
-  // Check for any unreplaced variables and log warnings
-  const unreplacedVars = result.match(/{{(\w+)}}/g);
-  if (unreplacedVars && unreplacedVars.length > 0) {
-    console.warn('Unreplaced template variables found:', unreplacedVars);
+  // Validate inputs with detailed error handling
+  if (!template) {
+    console.error('Template is required for variable substitution');
+    return '';
   }
   
-  return result;
+  if (!productData) {
+    console.error('Product data is required for variable substitution');
+    return template;
+  }
+
+  try {
+    // Create comprehensive variable mapping with robust formatting and fallbacks
+    let formattedPrice = '0.00';
+    
+    // Enhanced price formatting with comprehensive null/undefined handling
+    if (productData.price !== null && productData.price !== undefined) {
+      if (typeof productData.price === 'number') {
+        formattedPrice = productData.price.toFixed(2);
+      } else if (typeof productData.price === 'string') {
+        const parsedPrice = parseFloat(productData.price);
+        formattedPrice = !isNaN(parsedPrice) ? parsedPrice.toFixed(2) : '0.00';
+      } else {
+        console.warn('Price value is not a valid number or string:', productData.price);
+        formattedPrice = '0.00';
+      }
+    }
+
+    // Comprehensive variable mapping with safe type conversion
+    const variables = {
+      title: productData.title?.toString() || 'Product Title',
+      description: productData.description?.toString() || 'Product Description',
+      price: formattedPrice,
+      inventory: productData.inventory !== null && productData.inventory !== undefined ? 
+        productData.inventory.toString() : '0',
+      sku: productData.sku?.toString() || 'N/A',
+      vendor: productData.vendor?.toString() || 'Unknown Vendor',
+      category: productData.category?.toString() || 'Uncategorized',
+      status: productData.status?.toString() || 'active',
+      storeId: productData.storeId !== null && productData.storeId !== undefined ? 
+        productData.storeId.toString() : '0',
+      lastUpdated: productData.lastUpdated ? 
+        formatDate(productData.lastUpdated) : formatDate(new Date())
+    };
+
+    let result = template;
+    
+    // Enhanced variable replacement with error handling
+    Object.keys(variables).forEach(key => {
+      try {
+        const regex = new RegExp(`{{${key}}}`, 'g');
+        const value = variables[key];
+        
+        // Ensure we have a valid string value for replacement
+        const safeValue = value !== null && value !== undefined ? value.toString() : '';
+        result = result.replace(regex, safeValue);
+      } catch (error) {
+        console.error(`Error replacing variable '${key}':`, error);
+        // Continue with other variables even if one fails
+      }
+    });
+    
+    // Enhanced unreplaced variable detection with detailed logging
+    const unreplacedVars = result.match(/{{(\w+)}}/g);
+    if (unreplacedVars && unreplacedVars.length > 0) {
+      console.warn('Unreplaced template variables found:', {
+        variables: unreplacedVars,
+        availableData: Object.keys(productData),
+        templateVariables: Object.keys(variables)
+      });
+    }
+    
+    return result;
+    
+  } catch (error) {
+    console.error('Critical error in variable substitution:', error);
+    console.error('Template:', template);
+    console.error('Product data:', productData);
+    return template; // Return original template as fallback
+  }
 };
 
 // Extract variables from template content
@@ -196,9 +237,9 @@ const templateService = {
       throw new Error('Template not found');
     }
     return { ...template };
-  },
+},
 
-async create(templateData) {
+  async create(templateData) {
     await apiDelay();
     const maxId = Math.max(...templates.map(t => t.id), 0);
     const variables = extractVariables(templateData.content);
@@ -216,9 +257,9 @@ async create(templateData) {
     
     templates.push(newTemplate);
     return { ...newTemplate };
-  },
+},
 
-async update(id, templateData) {
+  async update(id, templateData) {
     await apiDelay();
     const index = templates.findIndex(t => t.id === parseInt(id));
     if (index === -1) {
@@ -252,9 +293,9 @@ async update(id, templateData) {
     
     const deletedTemplate = templates.splice(index, 1)[0];
     return { ...deletedTemplate };
-  },
+},
 
-async generatePreview(templateId, productData) {
+  async generatePreview(templateId, productData) {
     await apiDelay();
     const template = templates.find(t => t.id === parseInt(templateId));
     if (!template) {
