@@ -134,27 +134,26 @@ const substituteVariables = (template, productData) => {
     return template || '';
   }
 
-  let result = template;
-  
-  // Format price safely
+  // Create comprehensive variable mapping with proper formatting and fallbacks
   const formattedPrice = productData.price ? 
     (typeof productData.price === 'number' ? productData.price.toFixed(2) : productData.price.toString()) : 
     '0.00';
-  
-  // Create variables object with safe fallbacks
+
   const variables = {
-    title: productData.title || 'Untitled Product',
-    description: productData.description || 'No description available',
-    sku: productData.sku || 'N/A',
-    category: productData.category || 'Uncategorized',
-    vendor: productData.vendor || 'Unknown Vendor',
+    title: productData.title || 'Product Title',
+    description: productData.description || 'Product Description',
     price: formattedPrice,
-    inventory: productData.inventory?.toString() || '0',
-    lastUpdated: productData.lastUpdated ? formatDate(productData.lastUpdated) : formatDate(new Date()),
-    storeId: productData.storeId || '',
-    status: productData.status || 'Available'
+    inventory: productData.inventory !== undefined ? productData.inventory.toString() : '0',
+    sku: productData.sku || 'N/A',
+    vendor: productData.vendor || 'Unknown Vendor',
+    category: productData.category || 'Uncategorized',
+    status: productData.status || 'active',
+    storeId: productData.storeId ? productData.storeId.toString() : '0',
+    lastUpdated: productData.lastUpdated ? formatDate(productData.lastUpdated) : formatDate(new Date())
   };
 
+  let result = template;
+  
   // Replace all variables in template
   Object.keys(variables).forEach(key => {
     const regex = new RegExp(`{{${key}}}`, 'g');
@@ -184,10 +183,10 @@ const extractVariables = (content) => {
   }
 };
 
-export const templateService = {
+const templateService = {
   async getAll() {
     await apiDelay();
-return [...templates];
+    return [...templates];
   },
 
   async getById(id) {
